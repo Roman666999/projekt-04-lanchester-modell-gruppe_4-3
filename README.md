@@ -1,1 +1,6 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/0p18eg-h)
+Gruppe 4.3: Zeitliche Entwicklung zweier sich bekämpfender Populationen- Modell von Lanchester
+
+Gruppenmitglieder: Dennis Schiller, Roman Kosow
+
+Das Seminarprojekt erforderte eine Java Applikation zu erstellen, die die zeitliche Entwicklung sich zweier bekämpfender Populationen anhand des Modells von Lanchester visualisieren soll.
+Wir haben uns dabei für jeweils 2 Balken entschieden, die die Populationen von G und H aufzeigen. Die Grundidee hinter dem Modell von Lanchester besteht darin, dass die Stärke einer Population nicht nur von Ihrer absoluten Größe, sondern auch von ihrer Kampfeffektivität abhängt.
