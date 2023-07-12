@@ -66,35 +66,40 @@ class _6_YourOwnAnimationPanel extends JPanel {
 	double currentY2 = 590;                        // Taiwan Y
 
 
-	double basePopulation1 = 3000000;                    // "g0" China Population
-	double eff_s = 4;                                // "s" China Effektivitätsparameter
+	double G0 = 3000000;                    // "g0" China Population
+	double s = 16;                                // "s" China Effektivitätsparameter
 
 
-	double basePopulation2 = 3000000;                    // "h0" Taiwan Population
-	double eff_r = 4;                               // "r" Taiwan Effektivitätsparameter
+	double H0 = 4000000;                    // "h0" Taiwan Population
+	double r = 9;                               // "r" Taiwan Effektivitätsparameter
 
 
 	double baseLength;                                //Länge zur Berechnung Verhältnis
 	double maxLength = 300;                            //maximale Länge Balken
 	double scalePopulation;                            //Verhältnis China zu Taiwan
-	double population1 = basePopulation1;            //Startpopulation China
-	double population2 = basePopulation2;            //Startpopulation Taiwan
+	double G = G0;            //Startpopulation China
+	double H = H0;            //Startpopulation Taiwan
 
 	double simTime;
 
+	double k = Math.sqrt(s*r);
+
 
 	//Berechnung für L
-	double l = eff_r * Math.pow(basePopulation1, 2) - eff_s * Math.pow(basePopulation2, 2);
+	double l = s * Math.pow(G0, 2) - r * Math.pow(H0, 2);
 
 
 	//Berechnung Simulationszeit wenn Taiwan gewinnt (L<0)
-	double simTimeT = (Math.atan((basePopulation2 / basePopulation1) * (Math.sqrt(eff_r / eff_s)))) / Math.sqrt(eff_r * eff_s);
+	double simTimeH = (Math.atan((H0 / G0) * (Math.sqrt(r / s)))) / Math.sqrt(r * s);
 
 	//Berechnung Simulationszeit wenn China gewinnt (L>0)
-	double simTimeC = (Math.atan((basePopulation1 / basePopulation2) * (Math.sqrt(eff_s / eff_r)))) / Math.sqrt(eff_r * eff_s);
+	double simTimeG = (Math.atan((G0 / H0) * (Math.sqrt(s / r)))) / Math.sqrt(r * s);
 
 	//Bestimmung Skalierungsfaktor
-	double timeScale = 5;
+	double timeScale = 6;
+
+	double simTimeG0 = 1/k * Math.log(0.5 * G0);
+	double simTimeH0 = 1/k * Math.log(0.5 * H0);
 
 
 	Image map = Toolkit.getDefaultToolkit().getImage("map.jpg");
@@ -104,42 +109,60 @@ class _6_YourOwnAnimationPanel extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
+		/*
+
 		//Auswahl der richtigen Simulationszeit:
-		if ( l > 0 ) { simTime = simTimeC; }
-		if ( l < 0 ) { simTime = simTimeT; }
-		if ( l == 0 ) { simTime = 5; }
+		if ( l > 0 ) { simTime = simTimeG; }
+		if ( l < 0 ) { simTime = simTimeH; }
+		if ( l == 0 ) {
+			if (G0 >= H0) { simTime = simTimeG0; }
+			if (G0 < H0) { simTime = simTimeH0; }
+		}
+
+		*/
+		//Auswahl der richtigen Simulationszeit:
+		if ( l != 0 ) {
+
+			if ( l > 0 ) { simTime = simTimeG; }
+			if ( l < 0 ) { simTime = simTimeH; }
+
+		} else {
+
+			if (G0 >= H0) { simTime = simTimeG0; }
+			if (G0 < H0) { simTime = simTimeH0; }
+		}
 
 		time = (t.getTimeInSeconds()/ timeScale) * simTime;
 
-		if (population1 > 0 && population2 > 0) {
+		if (G > 0 && H > 0) {
 
 
 			//Rechnung Population China nach Zeit
-			population1 = basePopulation1 * Math.cosh(Math.sqrt(eff_s * eff_r) * time) - Math.sqrt(eff_r / eff_s) * basePopulation2 * Math.sinh(Math.sqrt(eff_s * eff_r) * time);
+			G = G0 * Math.cosh(Math.sqrt(s * r) * time) - Math.sqrt(r / s) * H0 * Math.sinh(Math.sqrt(s * r) * time);
 
 			//Rechnung Population Taiwan nach Zeit
-			population2 = basePopulation2 * Math.cosh(Math.sqrt(eff_s * eff_r) * time) - Math.sqrt(eff_s / eff_r) * basePopulation1 * Math.sinh(Math.sqrt(eff_s * eff_r) * time);
+			H = H0 * Math.cosh(Math.sqrt(s * r) * time) - Math.sqrt(s / r) * G0 * Math.sinh(Math.sqrt(s * r) * time);
 
 
 				// Rechtecklänge China
-				baseLength = maxLength * (population1 / basePopulation1);
+				baseLength = maxLength * (G/ G0);
 				recWidth1 = (int) Math.round(baseLength);
 
 				// Rechtecklänge Taiwan
-				scalePopulation = baseLength * (population2 / population1);
+				scalePopulation = baseLength * (H / G);
 				recWidth2 = (int) Math.round(scalePopulation);
 
 
 			g.drawImage(map, 0, 0, width, height, this);
 
 			//China Rechteck
-			if (population1 > 0) {
+			if (G > 0) {
 				g.setColor(new Color(255, 0, 0));
 				g.fillRect((int) currentX1, (int) currentY1, recWidth1, recHeight);
 			}
 
 			//Taiwan Rechteck
-			if (population2 > 0) {
+			if (H > 0) {
 				g.setColor(new Color(0, 137, 255));
 				g.fillRect((int) currentX2, (int) currentY2, recWidth2, recHeight);
 			}
@@ -148,18 +171,18 @@ class _6_YourOwnAnimationPanel extends JPanel {
 			g.setColor(Color.white);
 
 			//Anzeige Population China
-			int popCalk1 = (int) Math.round(population1);
+			int popCalk1 = (int) Math.round(G);
 			String pop1 = popCalk1 + "";
-			if (population1 < 0) {
+			if (G < 0) {
 				pop1 = "0";
 			}
 			g.drawString("Population China:  " + pop1, 326, 415);
 
 
 			// Anzeige Population Taiwan
-			int popCalk2 = (int) Math.round(population2);
+			int popCalk2 = (int) Math.round(H);
 			String pop2 = popCalk2 + "";
-			if (population2 < 0) {
+			if (H < 0) {
 				pop2 = "0";
 			}
 			g.drawString("Population Taiwan:  " + pop2, 562, 585);
@@ -172,13 +195,13 @@ class _6_YourOwnAnimationPanel extends JPanel {
 
 			//China Rechteck
 
-			if (population1 > 0) {
+			if (G > 0) {
 				g.setColor(new Color(255, 0, 0));
 				g.fillRect((int) currentX1, (int) currentY1, recWidth1, recHeight);
 			}
 
 			//Taiwan Rechteck
-			if (population2 > 0) {
+			if (H > 0) {
 				g.setColor(new Color(0, 137, 255));
 				g.fillRect((int) currentX2, (int) currentY2, recWidth2, recHeight);
 			}
@@ -188,23 +211,23 @@ class _6_YourOwnAnimationPanel extends JPanel {
 			//Anzeige Population
 			g.setColor(Color.white);
 
-			int popCalk1 = (int) Math.round(population1);
+			int popCalk1 = (int) Math.round(G);
 			String pop1 = popCalk1 + "";
-			if (population1 < 0) {
+			if (G < 0) {
 				pop1 = "0";
 			}
 			g.drawString("Population China:  " + pop1, 326, 415);
 
-			int popCalk2 = (int) Math.round(population2);
+			int popCalk2 = (int) Math.round(H);
 			String pop2 = popCalk2 + "";
-			if (population2 < 0) {
+			if (H < 0) {
 				pop2 = "0";
 			}
 			g.drawString("Population Taiwan:  " + pop2, 562, 585);
 
 			//Ausgabe Gewinner
 
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 22));
 
 			if (recWidth1 > recWidth2) {
 				g.drawString("Winner: China", 700, 780);
@@ -212,10 +235,10 @@ class _6_YourOwnAnimationPanel extends JPanel {
 			else if (recWidth1 < recWidth2) {
 				g.drawString("Winner: Taiwan", 700, 780);
 			}
-			else if (l == 0 && basePopulation1 > basePopulation2) {
+			else if (l == 0 && G0 > H0) {
 				g.drawString("Tie (Pyrrhussieg China)", 700, 780);
 			}
-			else if (l == 0 && basePopulation1 < basePopulation2) {
+			else if (l == 0 && G0 < H0) {
 				g.drawString("Tie (Pyrrhussieg Taiwan)", 700, 780);
 			}
 			else { g.drawString("It's a tie", 850, 750);
